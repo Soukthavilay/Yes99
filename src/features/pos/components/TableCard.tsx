@@ -1,5 +1,6 @@
 import { LucideIcon, Users, Clock, Receipt } from 'lucide-react';
 import Link from 'next/link';
+import { useOrderItemsByTable } from '@/hooks/useOrderItems';
 import { usePOSStore } from '../store';
 
 interface TableProps {
@@ -13,10 +14,12 @@ interface TableProps {
 }
 
 export const TableCard = ({ id, name, status, guestCount, duration }: TableProps) => {
-  const getTableTotal = usePOSStore((state: any) => state.getTableTotal);
+  const { data: orderItems } = useOrderItemsByTable(id);
   const reservations = usePOSStore((state: any) => state.reservations);
   
-  const tableTotal = getTableTotal(id);
+  const tableTotal = (orderItems || [])
+    .filter(item => item.status !== 'cancelled')
+    .reduce((total, item) => total + item.total_price, 0);
   
   // ກວດສອບວ່າມີການຈອງຢູ່ຫຼືບໍ່
   const activeReservation = reservations.find(

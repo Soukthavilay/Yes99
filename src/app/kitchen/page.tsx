@@ -1,19 +1,22 @@
 'use client';
 
 import React from 'react';
-import { usePOSStore } from '@/features/pos/store';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Clock, CheckCircle2, Utensils, XCircle, ChevronRight, Play } from 'lucide-react';
+import { useOrderItems, useUpdateOrderItem } from '@/hooks/useOrderItems';
+import { OrderItemStatus } from '@/types/order-item';
 
 export default function KitchenPage() {
-  const { tableOrders, updateItemStatus } = usePOSStore();
+  const { data: ordersData } = useOrderItems({ page: 1, paging: 100 });
+  const updateOrderItem = useUpdateOrderItem();
 
-  // Flatten all table orders into a single list for the kitchen
-  const allOrders = Object.entries(tableOrders).flatMap(([tableId, items]) => 
-    items
-      .filter(item => item.status !== 'cancelled' && item.status !== 'served')
-      .map(item => ({ ...item, tableId }))
-  ).sort((a, b) => new Date(a.orderedAt).getTime() - new Date(b.orderedAt).getTime());
+  const allOrders = (ordersData?.data || [])
+    .filter(item => item.status !== 'cancelled' && item.status !== 'served')
+    .sort((a, b) => new Date(a.ordered_at).getTime() - new Date(b.ordered_at).getTime());
+
+  const handleUpdateStatus = async (itemId: string, status: OrderItemStatus) => {
+    await updateOrderItem.mutateAsync({ id: itemId, data: { status } });
+  };
 
   const statusColors: any = {
     pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
@@ -47,27 +50,27 @@ export default function KitchenPage() {
                 <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/40">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center font-black italic shadow-lg shadow-orange-500/20">
-                      {item.tableId}
+                      T
                     </div>
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Table</p>
-                      <p className="text-sm font-bold text-white">Table {item.tableId}</p>
+                      <p className="text-sm font-bold text-white">Table {item.table_id.slice(-4)}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Order Time</p>
-                    <p className="text-sm font-bold text-white">{new Date(item.orderedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-sm font-bold text-white">{new Date(item.ordered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                 </div>
 
                 <div className="p-8 flex-1">
-                  <h3 className="text-2xl font-black text-white mb-2">{item.name}</h3>
+                  <h3 className="text-2xl font-black text-white mb-2">{item.menu_item.name}</h3>
                   <p className="text-orange-500 font-black text-lg mb-4">x {item.quantity}</p>
                   
-                  {item.note && (
+                  {item.special_instructions && (
                     <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl mb-6">
                       <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">Note:</p>
-                      <p className="text-sm text-amber-200 font-medium">{item.note}</p>
+                      <p className="text-sm text-amber-200 font-medium">{item.special_instructions}</p>
                     </div>
                   )}
 
@@ -82,7 +85,7 @@ export default function KitchenPage() {
                 <div className="p-6 bg-black/40 border-t border-white/5 mt-auto">
                   {item.status === 'pending' && (
                     <button 
-                      onClick={() => updateItemStatus(item.tableId, item.id, 'preparing')}
+                      onClick={() => handleUpdateStatus(item.id, 'preparing')}
                       className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                     >
                       <Play size={18} />
@@ -91,7 +94,7 @@ export default function KitchenPage() {
                   )}
                   {item.status === 'preparing' && (
                     <button 
-                      onClick={() => updateItemStatus(item.tableId, item.id, 'ready')}
+                      onClick={() => handleUpdateStatus(item.id, 'ready')}
                       className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                     >
                       <CheckCircle2 size={18} />
@@ -100,7 +103,7 @@ export default function KitchenPage() {
                   )}
                   {item.status === 'ready' && (
                     <button 
-                      onClick={() => updateItemStatus(item.tableId, item.id, 'served')}
+                      onClick={() => handleUpdateStatus(item.id, 'served')}
                       className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                     >
                       <CheckCircle2 size={18} />
