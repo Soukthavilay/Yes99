@@ -17,11 +17,6 @@ export function middleware(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   if (isPublic) return NextResponse.next();
 
-  const token = request.cookies.get('access_token')?.value;
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
   const userRole = request.cookies.get('user_role')?.value;
   if (userRole) {
     const allowed = ROLE_ROUTE_MAP[userRole];
