@@ -72,6 +72,9 @@ axiosInstance.interceptors.response.use(
 
       try {
         const rt = tokenManager.getRefreshToken();
+        if (!rt) {
+          throw new Error('Missing refresh token');
+        }
         const res = await axiosInstance.post(ENDPOINTS.AUTH.REFRESH, {
           refresh_token: rt,
         });
@@ -81,8 +84,11 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as AxiosError);
+        tokenManager.clear();
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          if (window.location.pathname !== '/login') {
+            window.location.replace('/login');
+          }
         }
         return Promise.reject(refreshError);
       } finally {

@@ -17,9 +17,18 @@ export const MenuCard = ({ product, onAddToCart }: MenuCardProps) => {
     >
       <div className="aspect-square bg-white/5 rounded-2xl mb-4 overflow-hidden relative">
         {/* Placeholder for Product Image */}
-        <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-4xl italic">
-          Y99
-        </div>
+        {product.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.image}
+            alt={product.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-4xl italic">
+            Y99
+          </div>
+        )}
         {!product.isAvailable && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
             <span className="text-white font-bold text-xs uppercase tracking-widest px-3 py-1 bg-red-500 rounded-full">Sold Out</span>

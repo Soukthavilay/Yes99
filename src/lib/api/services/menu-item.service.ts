@@ -11,9 +11,12 @@ import {
 import { ApiResponse, PaginationParams } from '@/types/api';
 
 interface MenuItemParams extends PaginationParams {
+  search?: string;
   category_id?: string;
   item_type?: ItemType;
   is_active?: boolean;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
 }
 
 export const menuItemService = {
