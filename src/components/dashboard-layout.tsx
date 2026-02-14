@@ -47,6 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: '/pos', icon: <LayoutDashboard size={20} />, label: 'POS & Table', roles: ['owner', 'waiter', 'cashier'] },
     { href: '/zones', icon: <Map size={20} />, label: 'Zones', roles: ['owner'] },
     { href: '/inventory', icon: <Package size={20} />, label: 'Inventory', roles: ['owner'] },
+    { href: '/admin/users', icon: <UserIcon size={20} />, label: 'Users', roles: ['owner'] },
     { href: '/kitchen', icon: <Utensils size={20} />, label: 'Kitchen View', roles: ['owner', 'waiter', 'chef', 'bartender'] },
     { href: '/pos/history', icon: <History size={20} />, label: 'Bill History', roles: ['owner', 'waiter', 'cashier'] },
   ];

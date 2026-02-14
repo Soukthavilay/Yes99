@@ -58,9 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         tokenManager.setTokens(result.access_token, result.refresh_token);
       }
       await fetchUser();
-      router.replace('/pos');
+      const role = user?.role;
+      const fallback = '/pos';
+      const nextPath = role ? ROLE_ROUTES[role]?.[0] ?? fallback : fallback;
+      router.replace(nextPath);
     },
-    [fetchUser, router],
+    [fetchUser, router, user?.role],
   );
 
   const logout = useCallback(async () => {
