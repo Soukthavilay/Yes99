@@ -4,11 +4,12 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { MenuCard } from '@/features/pos/components/MenuCard';
 import { OrderSidebar } from '@/features/pos/components/OrderSidebar';
-import { mockProducts } from '@/features/pos/mock-data';
 import { usePOSStore } from '@/features/pos/store';
 import { Category } from '@/features/pos/types';
 import { Search, Utensils, Coffee, Beer, IceCream, Pizza } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { usePublicMenu } from '@/hooks/useMenuItems';
+import { Product } from '@/features/pos/types';
 
 const categories: { id: Category | 'ALL'; name: string; icon: React.ReactNode }[] = [
   { id: 'ALL', name: 'All Menu', icon: <Pizza size={18} /> },
@@ -34,13 +35,27 @@ function OrderContent() {
   const searchParams = useSearchParams();
   const tableId = searchParams.get('tableId');
 
+  const { data: menuRes } = usePublicMenu({ page: 1, paging: 200 });
+
+  const products: Product[] = (menuRes?.data ?? []).map((item: any) => {
+    const category: Category = item.item_type === 'beverage' ? 'DRINK' : 'FOOD';
+    return {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category,
+      image: item.image_url ?? undefined,
+      isAvailable: !!item.is_active,
+    };
+  });
+
   useEffect(() => {
     if (tableId) {
       setActiveTable(tableId);
     }
   }, [tableId, setActiveTable]);
 
-  const filteredProducts = mockProducts.filter((p) => {
+  const filteredProducts = products.filter((p) => {
     const matchesCategory = activeCategory === 'ALL' || p.category === activeCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;

@@ -3,10 +3,11 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePOSStore } from '@/features/pos/store';
-import { mockProducts } from '@/features/pos/mock-data';
 import { MenuCard } from '@/features/pos/components/MenuCard';
 import { Category } from '@/features/pos/types';
 import { ShoppingBag, Utensils, Coffee, Beer, IceCream, Pizza, ArrowLeft, Send, Receipt, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { usePublicMenu } from '@/hooks/useMenuItems';
+import { Product } from '@/features/pos/types';
 
 export default function CustomerOrderPage() {
   const params = useParams();
@@ -16,6 +17,20 @@ export default function CustomerOrderPage() {
   const { cart, tableOrders, addToCart, placeOrder, clearCart, getTableTotal } = usePOSStore();
   const [activeCategory, setActiveCategory] = useState<Category | 'ALL'>('ALL');
   const [showCart, setShowCart] = useState(false);
+
+  const { data: menuRes } = usePublicMenu({ page: 1, paging: 200 });
+
+  const products: Product[] = (menuRes?.data ?? []).map((item: any) => {
+    const category: Category = item.item_type === 'beverage' ? 'DRINK' : 'FOOD';
+    return {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category,
+      image: item.image_url ?? undefined,
+      isAvailable: !!item.is_active,
+    };
+  });
 
   const activeTableItems = tableOrders[tableId] || [];
   const tableTotal = getTableTotal(tableId);
@@ -28,7 +43,7 @@ export default function CustomerOrderPage() {
     { id: 'DESSERT', name: 'Desserts', icon: <IceCream size={18} /> },
   ];
 
-  const filteredProducts = mockProducts.filter(product => 
+  const filteredProducts = products.filter(product => 
     activeCategory === 'ALL' || product.category === activeCategory
   );
 

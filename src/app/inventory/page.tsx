@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { StockAdjustmentModal } from '@/features/inventory/components/StockAdjustmentModal';
 import { Ingredient } from '@/features/inventory/types';
-import { mockIngredients, mockSuppliers } from '@/features/inventory/mock-data';
 
 export default function InventoryPage() {
   const { ingredients, setIngredients, suppliers, setSuppliers, updateStock } = useInventoryStore();
@@ -38,16 +37,6 @@ export default function InventoryPage() {
   const onConfirmAdjustment = (id: string, quantity: number, type: 'in' | 'out' | 'adjustment', reason: string) => {
     updateStock(id, quantity, type, reason, 'Admin');
   };
-
-  // Initialize with mock data
-  useEffect(() => {
-    if (ingredients.length === 0) {
-      setIngredients(mockIngredients);
-    }
-    if (suppliers.length === 0) {
-      setSuppliers(mockSuppliers);
-    }
-  }, [ingredients.length, setIngredients, suppliers.length, setSuppliers]);
 
   const stats = [
     { label: 'Total Items', value: ingredients.length, icon: <Package size={20} />, color: 'blue' },

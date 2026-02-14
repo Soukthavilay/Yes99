@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/_next', '/favicon.ico', '/mockServiceWorker.js', '/customer'];
+const PUBLIC_PATHS = ['/login', '/_next', '/favicon.ico', '/customer'];
 
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
   owner: ['/pos', '/inventory', '/kitchen', '/reports', '/admin'],
