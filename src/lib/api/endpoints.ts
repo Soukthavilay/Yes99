@@ -1,0 +1,55 @@
+export const ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER_OWNER: '/auth/register-owner',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
+  },
+  USERS: {
+    BASE: '/users',
+    ME: '/users/me',
+    BY_ID: (id: string) => `/users/${id}`,
+    EMPLOYEES: '/users/employees',
+  },
+  CATEGORIES: {
+    BASE: '/categories',
+    ACTIVE: '/categories/active',
+    BY_ID: (id: string) => `/categories/${id}`,
+  },
+  MENU_ITEMS: {
+    BASE: '/menu-items',
+    PUBLIC: '/menu-items/public',
+    BY_ID: (id: string) => `/menu-items/${id}`,
+    ACTIVATE: (id: string) => `/menu-items/${id}/activate`,
+    DEACTIVATE: (id: string) => `/menu-items/${id}/deactivate`,
+    STATUS: (id: string) => `/menu-items/${id}/status`,
+    IMAGE: (id: string) => `/menu-items/${id}/image`,
+  },
+  ORDER_ITEMS: {
+    BASE: '/order-items',
+    BY_TABLE: (tableId: string) => `/order-items/table/${tableId}`,
+    BY_ID: (id: string) => `/order-items/${id}`,
+    CANCEL: (id: string) => `/order-items/${id}/cancel`,
+  },
+  TABLES: {
+    BASE: '/tables',
+    BULK: '/tables/bulk',
+    BY_ID: (id: string) => `/tables/${id}`,
+    STATUS: (id: string) => `/tables/${id}/status`,
+    QR: (id: string) => `/tables/${id}/generate-qr`,
+    ACTIVATE: (id: string) => `/tables/${id}/activate`,
+    DEACTIVATE: (id: string) => `/tables/${id}/deactivate`,
+  },
+  ZONES: {
+    BASE: '/zones',
+    BY_ID: (id: string) => `/zones/${id}`,
+    ACTIVATE: (id: string) => `/zones/${id}/activate`,
+    DEACTIVATE: (id: string) => `/zones/${id}/deactivate`,
+  },
+  BILLS: {
+    BASE: (tableId: string) => `/tables/${tableId}/bills`,
+    BY_ID: (tableId: string, billId: string) => `/tables/${tableId}/bills/${billId}`,
+    STATUS: (tableId: string, billId: string) => `/tables/${tableId}/bills/${billId}/status`,
+    COMPLETE: (tableId: string, billId: string) => `/tables/${tableId}/bills/${billId}/complete`,
+  },
+} as const;

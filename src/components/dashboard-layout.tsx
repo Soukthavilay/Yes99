@@ -1,15 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuthStore } from '@/core/auth-store';
+import { useAuth } from '@/lib/auth/auth-provider';
+import { getRoleLabel } from '@/lib/helpers/role';
 import { 
   LayoutDashboard, 
-  Monitor, 
   History, 
-  Settings, 
   LogOut, 
-  Menu, 
-  X, 
   Beer, 
   Package,
   Utensils,
@@ -42,14 +39,14 @@ const SidebarItem = ({ href, icon, label, active }: SidebarItemProps) => (
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
   const [isBeerModalOpen, setIsBeerModalOpen] = useState(false);
 
   const menuItems = [
-    { href: '/pos', icon: <LayoutDashboard size={20} />, label: 'POS & Table', roles: ['ADMIN', 'STAFF'] },
-    { href: '/inventory', icon: <Package size={20} />, label: 'Inventory', roles: ['ADMIN', 'STOCK'] },
-    { href: '/kitchen', icon: <Utensils size={20} />, label: 'Kitchen View', roles: ['ADMIN', 'STAFF', 'KITCHEN'] },
-    { href: '/pos/history', icon: <History size={20} />, label: 'Bill History', roles: ['ADMIN', 'STAFF'] },
+    { href: '/pos', icon: <LayoutDashboard size={20} />, label: 'POS & Table', roles: ['owner', 'waiter', 'cashier'] },
+    { href: '/inventory', icon: <Package size={20} />, label: 'Inventory', roles: ['owner'] },
+    { href: '/kitchen', icon: <Utensils size={20} />, label: 'Kitchen View', roles: ['owner', 'waiter', 'chef', 'bartender'] },
+    { href: '/pos/history', icon: <History size={20} />, label: 'Bill History', roles: ['owner', 'waiter', 'cashier'] },
   ];
 
   const filteredMenu = menuItems.filter(item => 
@@ -99,8 +96,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <UserIcon size={20} className="text-slate-400" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="font-semibold truncate">{user?.name || 'User'}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">{user?.role || 'Guest'}</p>
+              <p className="font-semibold truncate">{user?.full_name || user?.username || 'User'}</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">{user ? getRoleLabel(user.role) : 'Guest'}</p>
             </div>
           </div>
           <button

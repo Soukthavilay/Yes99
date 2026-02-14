@@ -1,68 +1,46 @@
-import apiClient from "@/core/api-client";
-import { Product, Reservation, OrderItem, Receipt as ReceiptType, BeerDeposit } from '../types';
+import { menuItemService } from '@/lib/api/services/menu-item.service';
+import { tableService } from '@/lib/api/services/table.service';
+import { orderItemService } from '@/lib/api/services/order-item.service';
+import { billService } from '@/lib/api/services/bill.service';
+import { OrderItemBulkCreate, OrderItemStatus } from '@/types/order-item';
+import { BillCreateRequest } from '@/types/bill';
 
 /**
- * POS Service handles all API interactions for the POS module.
- * Designed to be swapped with a real backend easily.
+ * POS Service — thin facade that delegates to centralized API services.
+ * Kept for backward-compat with existing POS components.
  */
 export const posService = {
-  // Menu & Products
-  getProducts: async (): Promise<Product[]> => {
-    const response = await apiClient.get('/pos/products');
-    return response.data;
+  getProducts: async (params?: { page?: number; paging?: number; category_id?: string }) => {
+    const res = await menuItemService.getPublicMenu(params);
+    return res;
   },
 
-  // Tables & Orders
-  getTables: async () => {
-    const response = await apiClient.get('/pos/tables');
-    return response.data;
+  getTables: async (params?: { zone_id?: string; status?: string }) => {
+    const res = await tableService.getTables(params as Parameters<typeof tableService.getTables>[0]);
+    return res;
   },
 
-  createOrder: async (tableId: string, items: OrderItem[]) => {
-    const response = await apiClient.post(`/pos/tables/${tableId}/orders`, { items });
-    return response.data;
+  createOrder: async (data: OrderItemBulkCreate) => {
+    return orderItemService.addOrderItems(data);
   },
 
-  updateOrderItemStatus: async (tableId: string, itemId: string, status: OrderItem['status']) => {
-    const response = await apiClient.patch(`/pos/tables/${tableId}/items/${itemId}`, { status });
-    return response.data;
+  getOrderItemsByTable: async (tableId: string, status?: OrderItemStatus) => {
+    return orderItemService.getOrderItemsByTable(tableId, status);
   },
 
-  // Reservations
-  getReservations: async (): Promise<Reservation[]> => {
-    const response = await apiClient.get('/pos/reservations');
-    return response.data;
+  updateOrderItem: async (itemId: string, data: { status?: OrderItemStatus }) => {
+    return orderItemService.updateOrderItem(itemId, data);
   },
 
-  addReservation: async (reservation: Omit<Reservation, 'id' | 'status'>) => {
-    const response = await apiClient.post('/pos/reservations', reservation);
-    return response.data;
+  cancelOrderItem: async (itemId: string, reason?: string) => {
+    return orderItemService.cancelOrderItem(itemId, { cancellation_reason: reason });
   },
 
-  updateReservationStatus: async (reservationId: string, status: Reservation['status']) => {
-    const response = await apiClient.patch(`/pos/reservations/${reservationId}`, { status });
-    return response.data;
+  createBill: async (tableId: string, data: BillCreateRequest) => {
+    return billService.createBill(tableId, data);
   },
 
-  // Payments & History
-  processPayment: async (tableId: string, paymentData: any): Promise<ReceiptType> => {
-    const response = await apiClient.post(`/pos/tables/${tableId}/checkout`, paymentData);
-    return response.data;
+  getBillsByTable: async (tableId: string) => {
+    return billService.getBillsByTable(tableId);
   },
-
-  getSalesHistory: async (): Promise<ReceiptType[]> => {
-    const response = await apiClient.get('/pos/history');
-    return response.data;
-  },
-
-  // Beer Deposits
-  addBeerDeposit: async (deposit: Omit<BeerDeposit, 'id' | 'depositedAt'>) => {
-    const response = await apiClient.post('/pos/beer-deposits', deposit);
-    return response.data;
-  },
-  
-  getBeerDeposits: async (): Promise<BeerDeposit[]> => {
-    const response = await apiClient.get('/pos/beer-deposits');
-    return response.data;
-  }
 };

@@ -2,38 +2,38 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/lib/auth/auth-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [mswReady, setMswReady] = useState(false);
+  const [mswReady, setMswReady] = useState(
+    process.env.NEXT_PUBLIC_USE_MOCKS !== 'true',
+  );
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_MOCKS !== 'true') return;
     async function init() {
-      if (process.env.NODE_ENV === 'development') {
-        const { initMocks } = await import('@/mocks/browser');
-        await initMocks();
-      }
+      const { initMocks } = await import('@/mocks/browser');
+      await initMocks();
       setMswReady(true);
     }
     init();
   }, []);
 
-  // ຖ້າຫາກກຳລັງ Load MSW ໃຫ້ລໍຖ້າກ່ອນ (ເພື່ອປ້ອງກັນ API Error ໃນຄັ້ງທຳອິດ)
-  if (process.env.NODE_ENV === 'development' && !mswReady) {
-    return null; 
-  }
+  if (!mswReady) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </QueryClientProvider>
   );
 }

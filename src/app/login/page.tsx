@@ -1,19 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuthStore } from '@/core/auth-store';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/auth-provider';
 import { LogIn } from 'lucide-react';
-import apiClient from '@/core/api-client';
+import { AxiosError } from 'axios';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const setAuth = useAuthStore((state) => state.setAuth);
-  const router = useRouter();
+
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,17 +19,13 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await apiClient.post('/auth/login', { username, password });
-      const { user, token } = response.data;
-      
-      setAuth(user, token);
-      
-      // Delay ເລັກໜ້ອຍເພື່ອໃຫ້ Browser ຈັດການ Cookies ທີ່ MSW ສົ່ງມາ
-      setTimeout(() => {
-        router.replace('/pos');
-      }, 100);
+      await login({ email, password });
     } catch (err) {
-      setError('Invalid username or password');
+      const message =
+        err instanceof AxiosError
+          ? err.response?.data?.error?.message ?? 'Invalid email or password'
+          : 'Something went wrong';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,12 +44,12 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 ml-1">Username</label>
+            <label className="text-sm font-medium text-slate-300 ml-1">Email</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. admin or staff"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="owner@example.com"
               className="w-full bg-[#1a1d26] border border-white/5 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all placeholder:text-slate-600"
               required
             />
@@ -94,17 +88,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        <div className="mt-10 grid grid-cols-2 gap-4">
-          <div className="text-center p-3 rounded-xl bg-white/5 border border-white/5">
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Admin Demo</p>
-            <p className="text-xs text-white">admin / 1234</p>
-          </div>
-          <div className="text-center p-3 rounded-xl bg-white/5 border border-white/5">
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Staff Demo</p>
-            <p className="text-xs text-white">staff / 1234</p>
-          </div>
-        </div>
       </div>
     </div>
   );

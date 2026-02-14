@@ -1,24 +1,41 @@
-export type Role = 'ADMIN' | 'STAFF' | 'KITCHEN' | 'STOCK';
+export type UserRole = 'owner' | 'waiter' | 'chef' | 'bartender' | 'cashier';
 
-export interface User {
+export interface AuthUser {
   id: string;
+  email: string;
   username: string;
-  name: string;
-  role: Role;
+  full_name: string | null;
+  role: UserRole;
+  is_active: boolean;
 }
 
 export interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
-  token: string | null;
+  isLoading: boolean;
 }
 
-// Routes Definition ສໍາລັບ RBAC
-export const ROLE_ROUTES: Record<Role, string[]> = {
-  ADMIN: ['/admin', '/pos', '/inventory', '/kitchen', '/reports'],
-  STAFF: ['/pos', '/kitchen'],
-  KITCHEN: ['/kitchen'],
-  STOCK: ['/inventory'],
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+}
+
+export interface TokenRefreshRequest {
+  refresh_token: string;
+}
+
+export const ROLE_ROUTES: Record<UserRole, string[]> = {
+  owner: ['/pos', '/inventory', '/kitchen', '/reports', '/admin'],
+  waiter: ['/pos', '/kitchen'],
+  chef: ['/kitchen'],
+  bartender: ['/kitchen'],
+  cashier: ['/pos'],
 };
 
-export const PUBLIC_ROUTES = ['/login', '/api/auth'];
+export const PUBLIC_ROUTES = ['/login', '/customer'];

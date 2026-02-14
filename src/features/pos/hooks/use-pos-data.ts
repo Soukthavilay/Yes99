@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { posService } from '../services/pos-service';
-import { Reservation, OrderItem } from '../types';
+import { OrderItemBulkCreate, OrderItemStatus } from '@/types/order-item';
+import { BillCreateRequest } from '@/types/bill';
 
 /**
  * usePOSData Hook
@@ -10,85 +11,77 @@ import { Reservation, OrderItem } from '../types';
 export const usePOSData = () => {
   const queryClient = useQueryClient();
 
-  // --- Queries ---
+  const useProducts = (params?: { page?: number; paging?: number; category_id?: string }) =>
+    useQuery({
+      queryKey: ['pos', 'products', params],
+      queryFn: () => posService.getProducts(params),
+    });
 
-  const useProducts = () => useQuery({
-    queryKey: ['pos', 'products'],
-    queryFn: posService.getProducts,
-  });
+  const useTables = (params?: { zone_id?: string; status?: string }) =>
+    useQuery({
+      queryKey: ['pos', 'tables', params],
+      queryFn: () => posService.getTables(params),
+    });
 
-  const useTables = () => useQuery({
-    queryKey: ['pos', 'tables'],
-    queryFn: posService.getTables,
-  });
+  const useOrderItemsByTable = (tableId: string | undefined, status?: OrderItemStatus) =>
+    useQuery({
+      queryKey: ['pos', 'order-items', tableId, status],
+      queryFn: () => posService.getOrderItemsByTable(tableId!, status),
+      enabled: !!tableId,
+    });
 
-  const useReservations = () => useQuery({
-    queryKey: ['pos', 'reservations'],
-    queryFn: posService.getReservations,
-  });
+  const useBillsByTable = (tableId: string | undefined) =>
+    useQuery({
+      queryKey: ['pos', 'bills', tableId],
+      queryFn: () => posService.getBillsByTable(tableId!),
+      enabled: !!tableId,
+    });
 
-  const useHistory = () => useQuery({
-    queryKey: ['pos', 'history'],
-    queryFn: posService.getSalesHistory,
-  });
+  const useCreateOrder = () =>
+    useMutation({
+      mutationFn: (data: OrderItemBulkCreate) => posService.createOrder(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['pos', 'order-items'] });
+        queryClient.invalidateQueries({ queryKey: ['pos', 'tables'] });
+      },
+    });
 
-  const useBeerDeposits = () => useQuery({
-    queryKey: ['pos', 'beer-deposits'],
-    queryFn: posService.getBeerDeposits,
-  });
+  const useUpdateItemStatus = () =>
+    useMutation({
+      mutationFn: ({ itemId, status }: { itemId: string; status: OrderItemStatus }) =>
+        posService.updateOrderItem(itemId, { status }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['pos', 'order-items'] });
+      },
+    });
 
-  // --- Mutations ---
+  const useCancelItem = () =>
+    useMutation({
+      mutationFn: ({ itemId, reason }: { itemId: string; reason?: string }) =>
+        posService.cancelOrderItem(itemId, reason),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['pos', 'order-items'] });
+      },
+    });
 
-  const useAddReservation = () => useMutation({
-    mutationFn: (reservation: Omit<Reservation, 'id' | 'status'>) => posService.addReservation(reservation),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pos', 'reservations'] });
-    },
-  });
-
-  const useUpdateReservationStatus = () => useMutation({
-    mutationFn: ({ id, status }: { id: string, status: Reservation['status'] }) => 
-      posService.updateReservationStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pos', 'reservations'] });
-    },
-  });
-
-  const useCreateOrder = () => useMutation({
-    mutationFn: ({ tableId, items }: { tableId: string, items: OrderItem[] }) => 
-      posService.createOrder(tableId, items),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pos', 'tables'] });
-    },
-  });
-
-  const useUpdateItemStatus = () => useMutation({
-    mutationFn: ({ tableId, itemId, status }: { tableId: string, itemId: string, status: OrderItem['status'] }) => 
-      posService.updateOrderItemStatus(tableId, itemId, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pos', 'tables'] });
-    },
-  });
-
-  const useCheckout = () => useMutation({
-    mutationFn: ({ tableId, paymentData }: { tableId: string, paymentData: any }) => 
-      posService.processPayment(tableId, paymentData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pos', 'tables'] });
-      queryClient.invalidateQueries({ queryKey: ['pos', 'history'] });
-    },
-  });
+  const useCreateBill = () =>
+    useMutation({
+      mutationFn: ({ tableId, data }: { tableId: string; data: BillCreateRequest }) =>
+        posService.createBill(tableId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['pos', 'bills'] });
+        queryClient.invalidateQueries({ queryKey: ['pos', 'tables'] });
+      },
+    });
 
   return {
     useProducts,
     useTables,
-    useReservations,
-    useHistory,
-    useBeerDeposits,
-    useAddReservation,
-    useUpdateReservationStatus,
+    useOrderItemsByTable,
+    useBillsByTable,
     useCreateOrder,
     useUpdateItemStatus,
-    useCheckout,
+    useCancelItem,
+    useCreateBill,
   };
 };
