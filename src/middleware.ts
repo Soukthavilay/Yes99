@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 const PUBLIC_PATHS = ['/login', '/_next', '/favicon.ico', '/customer'];
 
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
-  owner: ['/pos', '/inventory', '/kitchen', '/reports', '/admin'],
+  owner: ['/pos', '/zones', '/inventory', '/kitchen', '/reports', '/admin'],
   waiter: ['/pos', '/kitchen'],
   chef: ['/kitchen'],
   bartender: ['/kitchen'],

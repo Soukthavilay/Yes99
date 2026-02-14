@@ -35,7 +35,7 @@ function OrderContent() {
   const searchParams = useSearchParams();
   const tableId = searchParams.get('tableId');
 
-  const { data: menuRes } = usePublicMenu({ page: 1, paging: 200 });
+  const { data: menuRes } = usePublicMenu({ page: 1, paging: 100 });
 
   const products: Product[] = (menuRes?.data ?? []).map((item: any) => {
     const category: Category = item.item_type === 'beverage' ? 'DRINK' : 'FOOD';

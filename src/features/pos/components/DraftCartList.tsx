@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Trash2, Minus, Plus, Receipt, Send } from 'lucide-react';
-import { Product } from '../types';
+import { OrderItem } from '../types';
 
 interface DraftCartListProps {
-  cart: (Product & { quantity: number; productId: string })[];
+  cart: OrderItem[];
   activeTableId: string | null;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveFromCart: (productId: string) => void;

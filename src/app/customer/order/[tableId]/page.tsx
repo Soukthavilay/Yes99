@@ -18,7 +18,7 @@ export default function CustomerOrderPage() {
   const [activeCategory, setActiveCategory] = useState<Category | 'ALL'>('ALL');
   const [showCart, setShowCart] = useState(false);
 
-  const { data: menuRes } = usePublicMenu({ page: 1, paging: 200 });
+  const { data: menuRes } = usePublicMenu({ page: 1, paging: 100 });
 
   const products: Product[] = (menuRes?.data ?? []).map((item: any) => {
     const category: Category = item.item_type === 'beverage' ? 'DRINK' : 'FOOD';

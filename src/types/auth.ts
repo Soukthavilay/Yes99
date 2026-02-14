@@ -31,7 +31,7 @@ export interface TokenRefreshRequest {
 }
 
 export const ROLE_ROUTES: Record<UserRole, string[]> = {
-  owner: ['/pos', '/inventory', '/kitchen', '/reports', '/admin'],
+  owner: ['/pos', '/zones', '/inventory', '/kitchen', '/reports', '/admin'],
   waiter: ['/pos', '/kitchen'],
   chef: ['/kitchen'],
   bartender: ['/kitchen'],
